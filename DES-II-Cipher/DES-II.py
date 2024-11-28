@@ -155,13 +155,9 @@ def main():
     print("Key3: ", ''.join(map(str, key3)))
 
     binary_plaintext = desII.toBinary(''.join(plaintext))
-    plaintext_blocks = desII.split(binary_plaintext)
-    ciphertext = ''
-
-    for block in plaintext_blocks:
-        if len(block) < 64:
-            block = desII.pad(block)
-        ciphertext += ''.join(map(str, desII.tripleDES(block, key1, key2, key3)))
+    if len(binary_plaintext) < 64:
+        binary_plaintext = desII.pad(binary_plaintext)
+    ciphertext = desII.encrypt(binary_plaintext[:64], key)
 
     #Write ciphertext to file
     output_path = os.path.join("Symmetric-Cryptography", "DES-II-Cipher", "ciphertext.txt")

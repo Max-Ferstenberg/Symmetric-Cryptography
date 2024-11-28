@@ -137,13 +137,9 @@ def main():
     key = des.keyGen()
     print("Key: ", ''.join(map(str, key)))
     binary_plaintext = des.toBinary(''.join(plaintext))
-    plaintext_blocks = des.split(binary_plaintext)
-    ciphertext = ''
-    for block in plaintext_blocks:
-        if len(block) < 64:
-            block = des.pad(block)
-        ciphertext += des.encrypt(block, key)
-    ciphertext = des.split(ciphertext)
+    if len(binary_plaintext) < 64:
+        binary_plaintext = des.pad(binary_plaintext)
+    ciphertext = des.encrypt(binary_plaintext[:64], key)
 
     #Write ciphertext to file
     file = open("Symmetric-Cryptography\DES-Cipher\ciphertext.txt", "w")

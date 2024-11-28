@@ -4,4 +4,5 @@ Implementation and Description of DES/DES II and AES, as well as the ECB, OCB, E
 # TODO
 - Add modes of operation for DES
 - Integrate DES, DES II and Modes of Operation into a master program
-- Add AES and Integrate
+- Integrate AES
+- Documentation and Comparison of Ciphers

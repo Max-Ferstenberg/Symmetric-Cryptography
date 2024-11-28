@@ -2,7 +2,7 @@
 import numpy as np
 import os
 
-class DES(object):
+class DESII(object):
     #Split inputs into 64-bit blocks
     def split(self, text):
         return [text[i:i+64] for i in range(0, len(text), 64)]
@@ -32,16 +32,23 @@ class DES(object):
         IPTable = [58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8, 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3, 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7]
         return self.permute(text, IPTable)
     
-    #Key expansion
+        #Key expansion
     def keyExpansion(self, key):
-        pc1Table = [57, 49, 41, 33, 25, 17, 9, 1, 58, 50, 42, 34, 26, 18, 10, 2, 59, 51, 43, 35, 27, 19, 11, 3, 60, 52, 44, 36, 63, 55, 47, 39, 31, 23, 15, 7, 62, 54, 46, 38, 30, 22, 14, 6, 61, 53, 45, 37, 29, 21, 13, 5, 28, 20, 12, 4]
-        pc2Table = [14, 17, 11, 24, 1, 5, 3, 28, 15, 6, 21, 10, 23, 19, 12, 4, 26, 8, 16, 7, 27, 20, 13, 2, 41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48, 44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32]
+        pc1Table = [57, 49, 41, 33, 25, 17, 9, 1, 58, 50, 42, 34, 26, 18,
+                    10, 2, 59, 51, 43, 35, 27, 19, 11, 3, 60, 52, 44, 36,
+                    63, 55, 47, 39, 31, 23, 15, 7, 62, 54, 46, 38, 30, 22,
+                    14, 6, 61, 53, 45, 37, 29, 21, 13, 5, 28, 20, 12, 4] 
+        pc2Table = [14, 17, 11, 24, 1, 5, 3, 28, 15, 6, 21, 10, 23, 19,
+                    12, 4, 26, 8, 16, 7, 27, 20, 13, 2, 41, 52, 31, 37,
+                    47, 55, 30, 40, 51, 45, 33, 48, 44, 49, 39, 56, 34, 53,
+                    46, 42, 50, 36, 29, 32] 
         leftKey = key[:len(key)//2]
         rightKey = key[len(key)//2:]
         leftKey = np.roll(leftKey, -1)
         rightKey = np.roll(rightKey, -1)
         key = np.concatenate([leftKey, rightKey])
         return self.permute(key, pc2Table)
+
     
     #Expansion permutation
     def expansionPermutation(self, rightText):
@@ -129,26 +136,40 @@ class DES(object):
         text = self.finalPermutation(rightText + leftText)
         return ''.join([str(x) for x in text])
     
+    def tripleDES(self, text, key1, key2, key3):
+        return self.encrypt(self.encrypt(self.encrypt(text, key1), key2), key3)
+    
 def main():
-    des = DES()
+    desII = DESII()
     filepath = input("Enter the file path: ")
-    file = open(filepath, "r")
-    plaintext = list(file.read())
-    key = des.keyGen()
-    print("Key: ", ''.join(map(str, key)))
-    binary_plaintext = des.toBinary(''.join(plaintext))
-    plaintext_blocks = des.split(binary_plaintext)
+    with open(filepath, "r") as file:
+        plaintext = list(file.read())
+
+    #3 Keys for DES-II
+    key1 = desII.keyGen()
+    key2 = desII.keyGen()
+    key3 = desII.keyGen()
+
+    print("Key1: ", ''.join(map(str, key1)))
+    print("Key2: ", ''.join(map(str, key2)))
+    print("Key3: ", ''.join(map(str, key3)))
+
+    binary_plaintext = desII.toBinary(''.join(plaintext))
+    plaintext_blocks = desII.split(binary_plaintext)
     ciphertext = ''
+
     for block in plaintext_blocks:
         if len(block) < 64:
-            block = des.pad(block)
-        ciphertext += des.encrypt(block, key)
-    ciphertext = des.split(ciphertext)
+            block = desII.pad(block)
+        ciphertext += ''.join(map(str, desII.tripleDES(block, key1, key2, key3)))
 
     #Write ciphertext to file
-    file = open("Symmetric-Cryptography\DES-Cipher\ciphertext.txt", "w")
-    file.write(''.join(ciphertext))
-    file.close()
+    output_path = os.path.join("Symmetric-Cryptography", "DES-II-Cipher", "ciphertext.txt")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w") as file:
+        file.write(ciphertext)
+
+    print("Ciphertext written to", output_path)
 
 if __name__ == "__main__":
     main()
